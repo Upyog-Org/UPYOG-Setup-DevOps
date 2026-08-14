@@ -1,5 +1,5 @@
 global:
-   domain: <domain_name> ## Add your Domain Name "Eg: site.mydomain.com" Do not use the dummy domain
+   domain: www.enagariseva.com ## Add your Domain Name "Eg: site.mydomain.com" Do not use the dummy domain
    setup: fullsetup
 
 cluster-configs:
@@ -13,14 +13,16 @@ cluster-configs:
         egov-config:
             namespace: [ egov, monitoring ]
             data:
-                db-host: <db_host_name> ## Add db-host name eg: upyog-demo.database.azure.com
-                db-name: <db_name> ## Add db-name
-                db-url: jdbc:postgresql://<db_host_name>/<db_name> ## example: jdbc:postgresql://upyog-demo.postgres.database.azure.com:5432/egov_demo
-                domain: <domain_name> ## Add your Domain Name    
-                egov-services-fqdn-name: https://<domain_name>/ ## Add your Domain Name
+                db-host: upyog-postgres-prod.cf6umiugyga4.ap-south-1.rds.amazonaws.com ## Add db-host name eg: upyog-demo.database.azure.com
+                db-name: main ## Add db-name
+                db-port: "9878"
+                db-url: "jdbc:postgresql://upyog-postgres-prod.cf6umiugyga4.ap-south-1.rds.amazonaws.com:9878/main?ssl=true&sslmode=require&sslfactory=org.postgresql.ssl.NonValidatingFactory"
+                domain: www.enagariseva.com ## Add your Domain Name    
+                egov-services-fqdn-name: https://www.enagariseva.com/ ## Add your Domain Name
                 
-                egov-state-level-tenant-id: "pg" 
-                s3-assets-bucket: "(pg-egov-assets|egov-playground-assets)"
+                egov-state-level-tenant-id: "pg"
+                state-level-tenant-id: "pg" 
+                s3-assets-bucket: "upyog-file-storage"
                 es-host: "elasticsearch-data-v1.es-cluster"
                 es-indexer-host: "http://elasticsearch-data-v1.es-cluster:9200/"
                 flyway-locations: "filesystem:/flyway/sql,filesystem:/flyway/seed,filesystem:/flyway/qa"
@@ -37,7 +39,7 @@ cluster-configs:
                 spring-jpa-show-sql: "true"
                 timezone: Asia/Kolkata
                 tracer-errors-provideexceptionindetails: "true"
-                egov-bnd-freedownload-tenants: "pg.testing"
+                egov-bnd-freedownload-tenants: "pg.testing" 
                 egov-bnd-live-citizen-tenants: "pg.testing"
 
         egov-service-host:
@@ -169,13 +171,13 @@ egov-filestore:
   volume: /opt/eGov/filestore
   is-bucket-fixed: "true"
   minio.url : "http://minio.backbone:9000/"
-  aws.s3.url : "https://s3.amazonaws.com"
+  aws.s3.url : "https://s3.ap-south-1.amazonaws.com"
   is-s3-enabled: "true"
   minio-enabled: false
   allowed-file-formats-map: "{jpg:{'image/jpg','image/jpeg'},jpeg:{'image/jpeg','image/jpg'},png:{'image/png'},pdf:{'application/pdf'},odt:{'application/vnd.oasis.opendocument.text'},ods:{'application/vnd.oasis.opendocument.spreadsheet'},docx:{'application/x-tika-msoffice','application/x-tika-ooxml','application/vnd.oasis.opendocument.text','application/msword'},doc:{'application/x-tika-msoffice','application/x-tika-ooxml','application/vnd.oasis.opendocument.text','application/msword'},dxf:{'text/plain','application/dxf','application/octet-stream','image/vnd.dxf','image/vnd.dxf; format=ascii','image/vnd.dxf; format=binary','image/vnd.dxb'},csv:{'text/plain'},txt:{'text/plain'},xlsx:{'application/x-tika-ooxml','application/x-tika-msoffice','application/vnd.ms-excel'},xls:{'application/x-tika-ooxml','application/x-tika-msoffice','application/vnd.ms-excel'}}"
   allowed-file-formats: "jpg,jpeg,png,doc,docx,pdf,odt,ods,text,dxf,xls,xlsx"
   filestore-url-validity: 3600
-  fixed-bucketname: filestore bucket name  ## Add filestore bucket name
+  fixed-bucketname: upyog-file-storage  ## Add filestore bucket name
 
 egov-idgen:
   idformat-from-mdms: "true"
@@ -213,7 +215,7 @@ egov-user:
   citizen-registration-withlogin: "true"
   citizen-otp-fixed: "123456"
   citizen-otp-fixed-enabled: "true"
-  egov-state-level-tenant-id: "in"
+  egov-state-level-tenant-id: "pg"
   decryption-abac-enabled: "false"
 
 chatbot:
@@ -267,22 +269,29 @@ egov-mdms-service:
   replicas: 1
   images:
     - egovio/egov-mdms-service
+  heap: "-Xmx768m -Xms512m"
+  memory_limits: "1536Mi"
   mdms-path: "/work-dir/upyog-mdms-data/data"
   initContainers:
     gitSync:
-      repo: "git@github.com:upyog/upyog-mdms-data"   ##### Change repo url with Your fork Repo url
-      branch: "2.1"                                        ##### Change repo branch with Your fork Repo branch
+      repo: "git@github.com:Upyog-Org/upyog-mdms-data.git"   ##### Change repo url with Your fork Repo url
+      branch: "master"                                        ##### Change repo branch with Your fork Repo branch
+      dest: "upyog-mdms-data"                                  ##### Must match mdms-folder (git-sync otherwise uses *.git)
   mdms-folder: "upyog-mdms-data"
   masters-config-url: "file:///work-dir/upyog-mdms-data/master-config.json"
   java-args: -Dspring.profiles.active=monitoring
+
+egov-enc-service:
+  heap: "-Xmx256m -Xms128m"
+  memory_limits: "512Mi"
 
 egov-indexer:
   heap: "-Xmx512m -Xms512m"
   memory_limits: "768Mi"
   initContainers:
     gitSync:
-      repo: "git@github.com:upyog/upyog-configs"        ##### Change repo url with Your fork Repo url
-      branch: "2.1"                                      ##### Change repo branch with Your fork Repo branch
+      repo: "git@github.com:Upyog-Org/upyog-configs.git"        ##### Change repo url with Your fork Repo url
+      branch: "master"                                      ##### Change repo branch with Your fork Repo branch
   egov-indexer-yaml-repo-path: "file:///work-dir/upyog-configs/configs/egov-indexer/billingservices-indexer.yml,file:///work-dir/upyog-configs/configs/egov-indexer/collection-indexer.yml,file:///work-dir/upyog-configs/configs/egov-indexer/egov-telemetry-indexer.yml,file:///work-dir/upyog-configs/configs/egov-indexer/egov-uploader-indexer.yml,file:///work-dir/upyog-configs/configs/egov-indexer/error-queue.yml,file:///work-dir/upyog-configs/configs/egov-indexer/finance-rolloutadotpion-indexer.yml,file:///work-dir/upyog-configs/configs/egov-indexer/payment-indexer.yml,file:///work-dir/upyog-configs/configs/egov-indexer/rainmaker-pgr-indexer.yml,file:///work-dir/upyog-configs/configs/egov-indexer/rainmaker-pt-indexer.yml,file:///work-dir/upyog-configs/configs/egov-indexer/rainmaker-tl-indexer.yml,file:///work-dir/upyog-configs/configs/egov-indexer/chatbot-telemetry.yaml"
 
 egov-persister:
@@ -292,8 +301,8 @@ egov-persister:
   persist-yml-path: "file:///work-dir/upyog-configs/configs/egov-persister/pgr-services-persister.yml,file:///work-dir/upyog-configs/configs/egov-persister/pt-mutation-calculator-persister.yml,file:///work-dir/upyog-configs/configs/egov-persister/apportion-persister.yml,file:///work-dir/upyog-configs/configs/egov-persister/billing-services-persist.yml,file:///work-dir/upyog-configs/configs/egov-persister/egf-bill.yaml,file:///work-dir/upyog-configs/configs/egov-persister/egov-user-event-persister.yml,file:///work-dir/upyog-configs/configs/egov-persister/egov-workflow-v2-persister.yml,file:///work-dir/upyog-configs/configs/egov-persister/firenoc_persiter.yaml,file:///work-dir/upyog-configs/configs/egov-persister/hrms-employee-persister.yml,file:///work-dir/upyog-configs/configs/egov-persister/pdf-generator.yml,file:///work-dir/upyog-configs/configs/egov-persister/pg-service-persister.yml,file:///work-dir/upyog-configs/configs/egov-persister/pgr.v3.yml,file:///work-dir/upyog-configs/configs/egov-persister/property-services.yml,file:///work-dir/upyog-configs/configs/egov-persister/pt-calculator-v2-persister.yml,file:///work-dir/upyog-configs/configs/egov-persister/pt-drafts.yml,file:///work-dir/upyog-configs/configs/egov-persister/pt-persist.yml,file:///work-dir/upyog-configs/configs/egov-persister/tl-billing-slab-persister.yml,file:///work-dir/upyog-configs/configs/egov-persister/tl-calculation-persister.yml,file:///work-dir/upyog-configs/configs/egov-persister/uploader-persister.yml,file:///work-dir/upyog-configs/configs/egov-persister/collection-migration-persister.yml,file:///work-dir/upyog-configs/configs/egov-persister/property-services-registry.yml,file:///work-dir/upyog-configs/configs/egov-persister/tradelicense.yml,file:///work-dir/upyog-configs/configs/egov-persister/sewerage-persist.yml,file:///work-dir/upyog-configs/configs/egov-persister/water-persist.yml,file:///work-dir/upyog-configs/configs/egov-persister/water-meter.yml,file:///work-dir/upyog-configs/configs/egov-persister/bpa-persister.yml,file:///work-dir/upyog-configs/configs/egov-persister/assessment-persister.yml,file:///work-dir/upyog-configs/configs/egov-persister/chatbot.yml"
   initContainers:
     gitSync:
-      repo: "git@github.com:upyog/upyog-configs"      ##### Change repo url with Your fork Repo url
-      branch: "2.1"                                    ##### Change repo branch with Your fork Repo branch
+      repo: "git@github.com:Upyog-Org/upyog-configs.git"      ##### Change repo url with Your fork Repo url
+      branch: "master"                                    ##### Change repo branch with Your fork Repo branch
 
 pgr-services:
   memory_limits: 512Mi
@@ -301,29 +310,29 @@ pgr-services:
 egov-data-uploader:
   initContainers:
     gitSync:
-      repo: "git@github.com:egovernments/configs"      ##### Change repo url with Your fork Repo url
-      branch: "UAT"                                    ##### Change repo branch with Your fork Repo branch
+      repo: "git@github.com:Upyog-Org/upyog-configs.git"      ##### Change repo url with Your fork Repo url
+      branch: "master"                                    ##### Change repo branch with Your fork Repo branch
 
 egov-searcher:
   search-yaml-path: "file:///work-dir/upyog-configs/configs/egov-searcher/rainmaker-pgr-v2.yml,file:///work-dir/upyog-configs/configs/egov-searcher/weekly-impact-emailer-searcher.yml,file:///work-dir/upyog-configs/configs/egov-searcher/PTDemandBasedSearcher.yml,file:///work-dir/upyog-configs/configs/egov-searcher/bill-genie.yml,file:///work-dir/upyog-configs/configs/egov-searcher/rainmaker-tl.yml,file:///work-dir/upyog-configs/configs/egov-searcher/localitySearcher.yml"
   initContainers:
     gitSync:
-      repo: "git@github.com:upyog/upyog-configs"     ##### Change repo url with Your fork Repo url
-      branch: "2.1"                                   ##### Change repo branch with Your fork Repo branch
+      repo: "git@github.com:Upyog-Org/upyog-configs.git"     ##### Change repo url with Your fork Repo url
+      branch: "master"                                   ##### Change repo branch with Your fork Repo branch
 
 dashboard-analytics:
   config-schema-paths: "file:///work-dir/configs/egov-dss-dashboards/dashboard-analytics/*.json"
   initContainers:
     gitSync:
-      repo: "git@github.com:egovernments/configs"      ##### Change repo url with Your fork Repo url
-      branch: "UAT"                                    ##### Change repo branch with Your fork Repo branch
+      repo: "git@github.com:Upyog-Org/upyog-configs.git"      ##### Change repo url with Your fork Repo url
+      branch: "master"                                    ##### Change repo branch with Your fork Repo branch
 
 dashboard-ingest:
   config-schema-paths: "file:///work-dir/configs/egov-dss-dashboards/dashboard-ingest/*.json"
   initContainers:
     gitSync:
-      repo: "git@github.com:egovernments/configs"      ##### Change repo url with Your fork Repo url
-      branch: "UAT"                                    ##### Change repo branch with Your fork Repo branch
+      repo: "git@github.com:Upyog-Org/upyog-configs.git"      ##### Change repo url with Your fork Repo url
+      branch: "master"                                    ##### Change repo branch with Your fork Repo branch
 
 # reportinfra >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -343,15 +352,15 @@ report:
   spring-datasource-tomcat-max-active: 5
   initContainers:
     gitSync:
-      repo: "git@github.com:egovernments/configs"     ##### Change repo url with Your fork Repo url
-      branch: "UAT"                                   ##### Change repo branch with Your fork Repo branch
+      repo: "git@github.com:Upyog-Org/upyog-configs.git"     ##### Change repo url with Your fork Repo url
+      branch: "master"                                   ##### Change repo branch with Your fork Repo branch
   report-locationsfile-path: "file:///work-dir/configs/reports/reportFileLocationsv1.txt"
 
 pdf-service:
   initContainers:
     gitSync:
-      repo: "git@github.com:egovernments/configs"     ##### Change repo url with Your fork Repo url
-      branch: "UAT"                                   ##### Change repo branch with Your fork Repo branch
+      repo: "git@github.com:Upyog-Org/upyog-configs.git"     ##### Change repo url with Your fork Repo url
+      branch: "master"                                   ##### Change repo branch with Your fork Repo branch
   data-config-urls: "file:///work-dir/configs/pdf-service/data-config/tradelicense-receipt.json,file:///work-dir/configs/pdf-service/data-config/property-receipt.json,file:///work-dir/configs/pdf-service/data-config/property-bill.json,file:///work-dir/configs/pdf-service/data-config/tradelicense-bill.json,file:///work-dir/configs/pdf-service/data-config/firenoc-receipt.json,file:///work-dir/configs/pdf-service/data-config/pt-receipt.json,file:///work-dir/configs/pdf-service/data-config/tl-receipt.json,file:///work-dir/configs/pdf-service/data-config/consolidatedbill.json,file:///work-dir/configs/pdf-service/data-config/consolidatedreceipt.json,file:///work-dir/configs/pdf-service/data-config/tlapplication.json,file:///work-dir/configs/pdf-service/data-config/passvehicle-certificate.json,file:///work-dir/configs/pdf-service/data-config/ws-consolidatedacknowlegment.json,file:///work-dir/configs/pdf-service/data-config/ws-consolidatedsewerageconnection.json,file:///work-dir/configs/pdf-service/data-config/buildingpermit.json,file:///work-dir/configs/pdf-service/data-config/ptmutationcertificate.json,file:///work-dir/configs/pdf-service/data-config/tlrenewalcertificate.json,file:///work-dir/configs/pdf-service/data-config/bpa-revocation.json,file:///work-dir/configs/pdf-service/data-config/buildingpermit-low.json,file:///work-dir/configs/pdf-service/data-config/misc-receipt.json,file:///work-dir/configs/pdf-service/data-config/ws-applicationwater.json,file:///work-dir/configs/pdf-service/data-config/ws-sanctionletter.json,file:///work-dir/configs/pdf-service/data-config/ws-estimationnotice.json,file:///work-dir/configs/pdf-service/data-config/ws-applicationsewerage.json,file:///work-dir/configs/pdf-service/data-config/tlcertificate.json"
   format-config-urls: "file:///work-dir/configs/pdf-service/format-config/tradelicense-receipt.json,file:///work-dir/configs/pdf-service/format-config/property-receipt.json,file:///work-dir/configs/pdf-service/format-config/property-bill.json,file:///work-dir/configs/pdf-service/format-config/tradelicense-bill.json,file:///work-dir/configs/pdf-service/format-config/firenoc-receipt.json,file:///work-dir/configs/pdf-service/format-config/pt-receipt.json,file:///work-dir/configs/pdf-service/format-config/tl-receipt.json,file:///work-dir/configs/pdf-service/format-config/consolidatedbill.json,file:///work-dir/configs/pdf-service/format-config/consolidatedreceipt.json,file:///work-dir/configs/pdf-service/format-config/tlapplication.json,file:///work-dir/configs/pdf-service/format-config/passvehicle-certificate.json,file:///work-dir/configs/pdf-service/format-config/ws-consolidatedacknowlegment.json,file:///work-dir/configs/pdf-service/format-config/ws-consolidatedsewerageconnection.json,file:///work-dir/configs/pdf-service/format-config/buildingpermit.json,file:///work-dir/configs/pdf-service/format-config/ptmutationcertificate.json,file:///work-dir/configs/pdf-service/format-config/tlrenewalcertificate.json,file:///work-dir/configs/pdf-service/format-config/bpa-revocation.json,file:///work-dir/configs/pdf-service/format-config/buildingpermit-low.json,file:///work-dir/configs/pdf-service/format-config/misc-receipt.json,file:///work-dir/configs/pdf-service/format-config/ws-applicationwater.json,file:///work-dir/configs/pdf-service/format-config/ws-sanctionletter.json,file:///work-dir/configs/pdf-service/format-config/ws-estimationnotice.json,file:///work-dir/configs/pdf-service/format-config/ws-applicationsewerage.json,file:///work-dir/configs/pdf-service/format-config/tlcertificate.json"
 
@@ -391,8 +400,21 @@ nginx-ingress:
   ssl-ciphers: "EECDH+CHACHA20:EECDH+AES"
   ssl-ecdh-curve: "X25519:prime256v1:secp521r1:secp384r1"
 
+# ingress-nginx chart reads controller.* from env yaml root
+controller:
+  networkPolicy:
+    enabled: false
+  service:
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "arn:aws:acm:ap-south-1:556071986217:certificate/fd14b136-40af-48c0-8503-e529fa4bdac6"
+      service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "http"
+      service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "https"
+    targetPorts:
+      http: http
+      https: http
+
 cert-manager:
-  email: "devops@egovernments.org"     ### Add email-id which used by cert-manager for certificates validation.
+  email: "techsupport@geps.co.in"     ### Add email-id which used by cert-manager for certificates validation.
   
   
 gateway:
@@ -431,7 +453,7 @@ user-otp:
 
 # rainmaker-pgr >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 rainmaker-pgr:
-  notification-sms-enabled: "true"
+  notification-sms-enabled: "false"
   notification-email-enabled: "false"
   new-complaint-enabled: "true"
   reassign-complaint-enabled: "true"
@@ -453,20 +475,20 @@ tl-services:
   tl-license-num-format: "MP-LEP-[SEQ_EG_PT_LN]"
   tl-userevents-pay-link: "citizen/otpLogin?mobileNo=$mobile&redirectTo=egov-common/pay?consumerCode=$applicationNo&tenantId=$tenantId"
   tl-payment-topic-name: "egov.collection.payment-create"
-  host-link: "https://upyog-demo.egovernments.org/citizen/"
-  pdf-link: "https://upyog-demo.egovernments.org/egov-pdf/download/epass?tenantId={TENANTID}&uuid={UUID}"
+  host-link: "https://www.enagariseva.com/citizen/"
+  pdf-link: "https://www.enagariseva.com/egov-pdf/download/epass?tenantId={TENANTID}&uuid={UUID}"
   tl-search-default-limit: "100"
 
 egov-workflow-v2:
   logging-level: "DEBUG"
   java-args: -Dspring.profiles.active=monitoring
   workflow-statelevel: "true"
-  host-link: "https://upyog-demo.egovernments.org/citizen/"
+  host-link: "https://www.enagariseva.com/citizen/"
   pdf-link: "/download/epass?tenantId={TENANTID}&ids={UUID}"
 
 egov-hrms:
   java-args: -Dspring.profiles.active=monitoring
-  employee-applink: "https://upyog-demo.egovernments.org/employee/user/login"
+  employee-applink: "https://www.enagariseva.com/employee/user/login"
 
 
 
@@ -574,20 +596,20 @@ kafka-v2:
   persistence:
     enabled: true
     aws:
-      - volumeId: "<kafka-v2_volume_id_1>" ## REPLACE: add volume id
-        zone: <zone>     ## REPLACE: add respective zone. 
-      - volumeId: "<kafka-v2_volume_id_2>" ## REPLACE: add volume id
-        zone: <zone> ## REPLACE: add zone
-      - volumeId: "<kafka-v2_volume_id_3>"  ## REPLACE: add volume id
-        zone: <zone> ## REPLACE: add zone
+      - volumeId: "vol-034740e05be0eedec" ## upyog-kafka-0
+        zone: ap-south-1a
+      - volumeId: "vol-01671664993fa27ab" ## upyog-kafka-1
+        zone: ap-south-1a
+      - volumeId: "vol-00aa46ed387a0f619" ## upyog-kafka-2
+        zone: ap-south-1a
   zookeeperHosts: "zookeeper-v2.zookeeper-cluster:2181/kafka-v2"
 
   heapOptions: "-Xms704M -Xmx704M"
-  resources:
-    limits:
+  resources: |
+    requests:
       cpu: 500m
       memory: 1408Mi
-    requests:
+    limits:
       cpu: 2000m
       memory: 1408Mi
   lingerMs: "250"
@@ -609,12 +631,12 @@ zookeeper-v2:
   persistence:
     enabled: true
     aws:
-      - volumeId: "<zookeeper-v2_volume_id_1>" ## REPLACE: add volume id
-        zone: <zone> ## REPLACE: add zone
-      - volumeId: "<zookeeper-v2_volume_id_2>" ## REPLACE: add volume id
-        zone: <zone> ## REPLACE: add zone
-      - volumeId: "<zookeeper-v2_volume_id_3>" ## REPLACE: add volume id
-        zone: <zone> ## REPLACE: add zone
+      - volumeId: "vol-001c16dc43d816f93" ## Upyog-Zookeeper-0
+        zone: ap-south-1a
+      - volumeId: "vol-0bf9f773329314db8" ## Upyog-Zookeeper-1
+        zone: ap-south-1a
+      - volumeId: "vol-00edf4d9def55d03f" ## Upyog-Zookeeper-2
+        zone: ap-south-1a
 
   ## Zookeeper JVM Heap Option
   heapOptions: "-Xms256M -Xmx256M"
@@ -634,12 +656,12 @@ elasticsearch-data-v1:
   persistence:
     enabled: true
     aws:
-      - volumeId: "<elasticsearch-data_volume_id_1>" ## REPLACE: add volume id
-        zone: <zone> ## REPLACE: add zone
-      - volumeId: "<elasticsearch-data_volume_id_2>" ## REPLACE: add volume id
-        zone: <zone> ## REPLACE: add zone
-      - volumeId: "<elasticsearch-data_volume_id_3>" ## REPLACE: add volume id
-        zone: <zone> ## REPLACE: add zone
+      - volumeId: "vol-0adc4eaca7d5a2940" ## Upyog-Elasticsearch-Data-0
+        zone: ap-south-1a
+      - volumeId: "vol-0f236f4c3315bf60c" ## Upyog-Elasticsearch-Data-1
+        zone: ap-south-1a
+      - volumeId: "vol-0c24467d4e9e7cedd" ## Upyog-Elasticsearch-Data-2
+        zone: ap-south-1a
 
   esJavaOpts: "-Xmx1g -Xms1g"
   resources:
@@ -659,12 +681,12 @@ elasticsearch-master-v1:
   persistence:
     enabled: true
     aws:
-      - volumeId: "<elasticsearch-master_volume_id_1>" ## REPLACE: add volume id
-        zone: <zone> ##REPLACE: add zone
-      - volumeId: "<elasticsearch-master_volume_id_2>" ## REPLACE: add volume id
-        zone: <zone> ##REPLACE: add zone
-      - volumeId: "<elasticsearch-master_volume_id_3>" ## REPLACE: add volume id
-        zone: <zone> ## REPLACE: add zone
+      - volumeId: "vol-021628e3fba648d6d" ## Upyog-Elasticsearch-Master-0
+        zone: ap-south-1a
+      - volumeId: "vol-01eb89fae71ce2bc0" ## Upyog-Elasticsearch-Master-1
+        zone: ap-south-1a
+      - volumeId: "vol-058a118e5c2b9ec9c" ## Upyog-Elasticsearch-Master-2
+        zone: ap-south-1a
  
   esJavaOpts: "-Xmx448m -Xms448m"
   resources:

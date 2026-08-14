@@ -46,6 +46,11 @@ global:
     # retryPeriod: 15s
 
 installCRDs: true
+crds:
+  enabled: true
+
+podDisruptionBudget:
+  enabled: false
 
 
 clusterIssuer:
@@ -197,6 +202,8 @@ prometheus:
     scrapeTimeout: 30s
     labels: {}
     honorLabels: false
+  podmonitor:
+    enabled: false
 
 # Use these variables to configure the HTTP_PROXY environment variables
 # http_proxy: "http://proxy:8080"
@@ -228,6 +235,10 @@ tolerations: []
 webhook:
   replicaCount: 1
   timeoutSeconds: 10
+  podDisruptionBudget:
+    enabled: false
+  networkPolicy:
+    enabled: false
 
   # Used to configure options for the webhook pod.
   # This allows setting options that'd usually be provided via flags.
@@ -378,6 +389,8 @@ webhook:
 cainjector:
   enabled: true
   replicaCount: 1
+  podDisruptionBudget:
+    enabled: false
 
   strategy: {}
     # type: RollingUpdate
