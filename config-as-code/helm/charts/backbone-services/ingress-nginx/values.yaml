@@ -16,6 +16,8 @@ fullnameOverride: nginx-ingress
 namespace: egov
 controller:
     name: controller
+    networkPolicy:
+        enabled: false
     image:
         ## Keep false as default for now!
         chroot: false
@@ -41,14 +43,15 @@ controller:
         https: 443
     # -- Will add custom configuration options to Nginx https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/
     config:
+        use-forwarded-headers: "true"
         server-snippet: |
-          add_header Content-Security-Policy "default-src 'self' https: 'unsafe-eval' 'unsafe-inline'; object-src 'none'; img-src 'self' https: data: blob:; style-src https: blob: 'unsafe-inline'; worker-src 'self' blob:; font-src 'self' https: data: blob:; child-src 'self' https: data: blob:; frame-ancestors 'self' https://{{ .Values.global.domain }};";
+          add_header Content-Security-Policy "default-src 'self' https: 'unsafe-eval' 'unsafe-inline'; object-src 'none'; img-src 'self' https: data: blob:; style-src https: blob: 'unsafe-inline'; worker-src 'self' blob:; font-src 'self' https: data: blob:; child-src 'self' https: data: blob:; frame-ancestors 'self' https://www.enagariseva.com;";
           add_header Referrer-Policy "no-referrer-when-downgrade";
           add_header Strict-Transport-Security "max-age=63072000; includeSubdomains; preload";
           add_header X-Content-Type-Options "nosniff";
           add_header X-Download-Options "noopen";
           add_header X-Frame-Options "SAMEORIGIN";
-          add_header X-XSS-Protection "1; mode=block"
+          add_header X-XSS-Protection "1; mode=block";
     # -- Annotations to be added to the controller config configuration configmap.
     configAnnotations: {}
     # -- Will add custom headers before sending traffic to backends according to https://github.com/kubernetes/ingress-nginx/tree/main/docs/examples/customization/custom-headers
@@ -734,6 +737,8 @@ revisionHistoryLimit: 10
 defaultBackend:
     ##
     enabled: false
+    networkPolicy:
+        enabled: false
     name: defaultbackend
     image:
         registry: registry.k8s.io
