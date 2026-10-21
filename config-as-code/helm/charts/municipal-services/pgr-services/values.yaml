@@ -153,7 +153,14 @@ env: |
   - name: EGOV_USR_EVENTS_RATE_CODE
     value: "RATE"
   - name: EGOV_USR_EVENTS_REOPEN_CODE
-    value: "REOPEN" 
+    value: "REOPEN"
+  - name: EGOV_URL_SHORTNER_HOST
+    valueFrom:
+      configMapKeyRef:
+        name: egov-service-host
+        key: egov-url-shortening
+  - name: EGOV_URL_SHORTNER_ENDPOINT
+    value: "egov-url-shortening/shortener" 
   - name: PGR_STATELEVEL_TENANTID
     valueFrom:
       configMapKeyRef:
