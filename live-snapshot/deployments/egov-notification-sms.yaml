@@ -1,0 +1,288 @@
+# Sanitized export of deployment/egov-notification-sms (namespace egov), revision 6.
+# Secret-like env values replaced with <REDACTED:NAME>. Reference only; not applied by helm/deployer.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: '6'
+  labels:
+    app: egov-notification-sms
+    group: core
+  name: egov-notification-sms
+  namespace: egov
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: egov-notification-sms
+      group: core
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        deployment-timestamp: '20260813145653'
+        kubectl.kubernetes.io/restartedAt: '2026-08-25T12:40:41+05:30'
+      labels:
+        app: egov-notification-sms
+        group: core
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: egov-notification-sms
+                  group: core
+              topologyKey: failure-domain.beta.kubernetes.io/zone
+            weight: 100
+      containers:
+      - env:
+        - name: KAFKA_TOPICS_NOTIFICATION_SMS_NAME
+          value: egov.core.notification.sms
+        - name: KAFKA_TOPICS_NOTIFICATION_SMS_ID
+          value: egov.core.notification.sms
+        - name: KAFKA_TOPICS_NOTIFICATION_SMS_GROUP
+          value: egov.core.notification.sms
+        - name: SMS_CONFIG_MAP
+          value: '{''ver'':''1.0'',''key'':''$password'',''encrpt'':''0'',''type'':''UC'',''dest'':''$mobileno'',''send'':''$senderid'',''text'':''$message'',''dlt_entity_id'':''1001642379503063088'',''dlt_template_id'':''1007525043589799563''}'
+        - name: SMS_PROVIDER_URL
+          value: http://127.0.0.1:8090/
+        - name: SMS_SENDER_USERNAME
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: egov-notification-sms
+        - name: SMS_SENDER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: egov-notification-sms
+        - name: SMS_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              key: sms-enabled
+              name: egov-config
+        - name: SMS_SENDER
+          value: ASCULB
+        - name: SMS_SENDER_REQUESTTYPE
+          value: GET
+        - name: SMS_SENDER_REQ_PARAM_NAME
+          value: send
+        - name: SMS_SENDER_USERNAME_REQ_PARAM_NAME
+          value: key
+        - name: SMS_SENDER_PASSWORD_REQ_PARAM_NAME
+          value: <REDACTED:SMS_SENDER_PASSWORD_REQ_PARAM_NAME>
+        - name: SMS_DESTINATION_MOBILE_REQ_PARAM_NAME
+          value: dest
+        - name: SMS_TYPE_REQ_PARAM_NAME
+          value: type
+        - name: SMS_MESSAGE_REQ_PARAM_NAME
+          value: text
+        - name: SMS_EXTRA_REQ_PARAMS
+          value: ver=1.0&encrpt=0&type=UC&dlt_entity_id=1001642379503063088&dlt_template_id=1007525043589799563
+        - name: SMS_VERIFY_SSL
+          value: 'false'
+        - name: SMS_URL_DONT_ENCODE_URL
+          value: 'false'
+        - name: SMS_SPICEDIGITAL_PROVIDER_URL
+          value: https://japi.instaalerts.zone/httpapi/QueryStringReceiver
+        - name: SMS_SPICEDIGITAL_SENDER_USERNAME
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: egov-notification-sms
+        - name: SMS_SPICEDIGITAL_SENDER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: egov-notification-sms
+        - name: LOGGING_LEVEL_org.egov.tracer.kafka
+          value: DEBUG
+        - name: SMS_SPICEDIGITAL_SENDER
+          value: ASCULB
+        - name: SMS_GATEWAY_TO_USE
+          value: Generic
+        - name: JAVA_OPTS
+          value: -Xmx384m -Xms256m
+        - name: JAVA_ARGS
+        - name: SMS_PROVIDER_USERNAME
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: egov-notification-sms
+        - name: SMS_PROVIDER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: egov-notification-sms
+        - name: SMS_PROVIDER_CLASS
+          value: Generic
+        - name: SMS_PROVIDER_REQUESTTYPE
+          value: GET
+        - name: SMS_PROVIDER_CONTENTTYPE
+          value: application/x-www-form-urlencoded
+        - name: SMS_VERIFY_RESPONSE
+          value: 'false'
+        - name: SMS_VERIFY_RESPONSECONTAINS
+          value: SMS message(s) sent
+        - name: SMS_SUCCESS_CODES
+          value: 200,201,202
+        - name: SMS_ERROR_CODES
+          value: 401,402,403,404,405,406,407,408,409,410,411,412,413,414,415,416,417,418
+        - name: SPRING_DATASOURCE_URL
+          valueFrom:
+            configMapKeyRef:
+              key: db-url
+              name: egov-config
+        - name: FLYWAY_ENABLED
+          value: 'false'
+        - name: SPRING_FLYWAY_ENABLED
+          value: 'false'
+        - name: MANAGEMENT_ENDPOINTS_WEB_BASE_PATH
+          value: /
+        - name: APP_TIMEZONE
+          valueFrom:
+            configMapKeyRef:
+              key: timezone
+              name: egov-config
+        - name: FLYWAY_URL
+          valueFrom:
+            configMapKeyRef:
+              key: db-url
+              name: egov-config
+        - name: SPRING_DATASOURCE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: db
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: db
+        - name: SPRING_DATASOURCE_TOMCAT_INITIAL_SIZE
+          valueFrom:
+            configMapKeyRef:
+              key: spring-datasource-tomcat-initialSize
+              name: egov-config
+        - name: SERVER_TOMCAT_MAX_THREADS
+          valueFrom:
+            configMapKeyRef:
+              key: server-tomcat-max-threads
+              name: egov-config
+        - name: SERVER_TOMCAT_MAX_CONNECTIONS
+          valueFrom:
+            configMapKeyRef:
+              key: server-tomcat-max-connections
+              name: egov-config
+        - name: SPRING_DATASOURCE_TOMCAT_MAX_ACTIVE
+          valueFrom:
+            configMapKeyRef:
+              key: spring-datasource-tomcat-max-active
+              name: egov-config
+        - name: SPRING_DATASOURCE_HIKARI_MAXIMUM-POOL-SIZE
+          valueFrom:
+            configMapKeyRef:
+              key: spring-datasource-tomcat-max-active
+              name: egov-config
+        - name: KAFKA_CONFIG_BOOTSTRAP_SERVER_CONFIG
+          valueFrom:
+            configMapKeyRef:
+              key: kafka-brokers
+              name: egov-config
+        - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+          valueFrom:
+            configMapKeyRef:
+              key: kafka-brokers
+              name: egov-config
+        - name: SPRING_JPA_SHOW_SQL
+          valueFrom:
+            configMapKeyRef:
+              key: spring-jpa-show-sql
+              name: egov-config
+        - name: JAEGER_SERVICE_NAME
+          value: egov-notification-sms
+        - name: JAEGER_SAMPLER_TYPE
+          value: remote
+        - name: JAEGER_AGENT_HOST
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.hostIP
+        - name: JAEGER_AGENT_PORT
+          value: '6831'
+        - name: JAEGER_SAMPLER_MANAGER_HOST_PORT
+          value: $(JAEGER_AGENT_HOST):5778
+        - name: TRACER_OPENTRACING_ENABLED
+          value: 'true'
+        - name: SMS_SENDERID
+          value: ASCULB
+        - name: SMS_MOBILE_PREFIX
+          value: '91'
+        image: upyogio/egov-notification-sms:v1.1.4-7bbec00d43-15
+        imagePullPolicy: IfNotPresent
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - sh
+              - -c
+              - sleep 10
+        name: egov-notification-sms
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        resources:
+          limits:
+            memory: 768Mi
+          requests:
+            memory: 512Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      - command:
+        - python
+        - /app/sms-dlt-proxy.py
+        env:
+        - name: INSTA_KEY
+          valueFrom:
+            secretKeyRef:
+              key: password
+              name: egov-notification-sms
+        - name: INSTA_URL
+          value: https://japi.instaalerts.zone/httpapi/QueryStringReceiver
+        - name: PORT
+          value: '8090'
+        image: python:3.12-alpine
+        imagePullPolicy: IfNotPresent
+        name: sms-dlt-proxy
+        resources:
+          limits:
+            cpu: 100m
+            memory: 64Mi
+          requests:
+            cpu: 20m
+            memory: 32Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /app
+          name: sms-dlt-proxy
+          readOnly: true
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: sms-dlt-proxy
+        name: sms-dlt-proxy
