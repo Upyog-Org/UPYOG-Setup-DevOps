@@ -1,0 +1,3 @@
+# live-snapshot files are stored byte-exact so their sha256 matches the live ConfigMaps
+live-snapshot/** -text
+live-snapshot/**/*.png binary

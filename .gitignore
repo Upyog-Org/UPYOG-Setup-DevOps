@@ -1,0 +1,14 @@
+# --- enagariseva: never commit credentials / local session files ---
+deploy-as-code/deployer/kubeConfig
+**/_emp-session.json
+*session*.json
+*.pem
+# note: deploy-as-code/deployer/digit-ssh.pem is already tracked; ignore rules do not untrack it
+
+# --- helm dependency rebuilds ---
+**/charts/*.tgz
+**/Chart.lock
+
+# --- local copies / audit working files ---
+deploy-as-code/bootstrap_scripts/main.*.chunk.js
+commit-audit/
