@@ -9,6 +9,9 @@ cluster-configs:
       
     root-ingress:
       cert-issuer: letsencrypt-prod
+      appRoot: digit-ui/citizen
+      serviceName: digit-ui
+      servicePort: 80
     configmaps:
         egov-config:
             namespace: [ egov, monitoring ]
@@ -34,6 +37,7 @@ cluster-configs:
                 server-tomcat-max-connections: "500"
                 server-tomcat-max-threads: "10"
                 sms-enabled: "true"
+                egov-internal-microservice-user-uuid: "28e62c47-927e-4367-9828-c40911d44810"
                 spring-datasource-tomcat-initialSize: "1"
                 spring-datasource-tomcat-max-active: "2"
                 spring-jpa-show-sql: "true"
@@ -159,6 +163,8 @@ digit-ui:
     sub_filter.conf: "
       sub_filter  '<head>' '<head>
       <script src=https://s3.ap-south-1.amazonaws.com/egov-uat-assets/globalConfigs.js type=text/javascript></script>
+      <script src=/digit-ui/pgr-inbox-patch.js?v=93 type=text/javascript></script>
+      <script src=/digit-ui/enagariseva-logo.js?v=1 type=text/javascript></script>
       ';"     
 citizen:
   custom-js-injection: |
@@ -173,33 +179,49 @@ egov-filestore:
   minio.url : "http://minio.backbone:9000/"
   aws.s3.url : "https://s3.ap-south-1.amazonaws.com"
   is-s3-enabled: "true"
-  minio-enabled: false
+  minio-enabled: true
+  fixed-bucket-region: "us-east-1"
   allowed-file-formats-map: "{jpg:{'image/jpg','image/jpeg'},jpeg:{'image/jpeg','image/jpg'},png:{'image/png'},pdf:{'application/pdf'},odt:{'application/vnd.oasis.opendocument.text'},ods:{'application/vnd.oasis.opendocument.spreadsheet'},docx:{'application/x-tika-msoffice','application/x-tika-ooxml','application/vnd.oasis.opendocument.text','application/msword'},doc:{'application/x-tika-msoffice','application/x-tika-ooxml','application/vnd.oasis.opendocument.text','application/msword'},dxf:{'text/plain','application/dxf','application/octet-stream','image/vnd.dxf','image/vnd.dxf; format=ascii','image/vnd.dxf; format=binary','image/vnd.dxb'},csv:{'text/plain'},txt:{'text/plain'},xlsx:{'application/x-tika-ooxml','application/x-tika-msoffice','application/vnd.ms-excel'},xls:{'application/x-tika-ooxml','application/x-tika-msoffice','application/vnd.ms-excel'}}"
   allowed-file-formats: "jpg,jpeg,png,doc,docx,pdf,odt,ods,text,dxf,xls,xlsx"
   filestore-url-validity: 3600
   fixed-bucketname: upyog-file-storage  ## Add filestore bucket name
+  memory_limits: 512Mi
+  heap: "-Xmx384m -Xms256m"
 
 egov-idgen:
   idformat-from-mdms: "true"
   java-args: -Dspring.profiles.active=monitoring
   autocreate-new-seq: "true"
+  memory_limits: 512Mi
+  heap: "-Xmx384m -Xms256m"
 
 egov-notification-sms:
-  sms-provider-url: "sms provider url" ## Add sms provider url
+  memory_limits: 768Mi
+  heap: "-Xmx384m -Xms256m"
+  sms-provider-url: "http://127.0.0.1:8090/"
   sms.provider.class: "Generic"
-  sms.provider.contentType:  "application/x-www-form-urlencoded"
-  sms-config-map: "{'User':'$username', 'passwd': '$password', 'sid':'$senderid', 'mobilenumber':'$mobileno', 'message':'$message', 'mtype':'N', 'DR':'N', 'smsservicetype':'singlemsg'}"
-  sms-gateway-to-use: "sms provider name" ## Add sms provider name
-  sms-sender: "sms sender" ## Add sms sender
+  sms.provider.contentType: "application/x-www-form-urlencoded"
+  sms.provider.requestType: "GET"
+  sms-config-map: "{'ver':'1.0','key':'$password','encrpt':'0','type':'UC','dest':'$mobileno','send':'$senderid','text':'$message','dlt_entity_id':'1001642379503063088','dlt_template_id':'1007525043589799563'}"
+  sms-gateway-to-use: "Generic"
+  sms-sender: "ASCULB"
+  sms.senderid: "ASCULB"
   sms-sender-requesttype: "GET"
   sms-custom-config: "true"
-  sms-extra-req-params: "mtype=N&DR=Y"
-  sms-sender-req-param-name: "sid"
-  sms-sender-username-req-param-name: "User"
-  sms-sender-password-req-param-name: "passwd"
-  sms-destination-mobile-req-param-name: "mobilenumber"
-  sms-message-req-param-name: "message"
+  sms-extra-req-params: "ver=1.0&encrpt=0&type=UC&dlt_entity_id=1001642379503063088&dlt_template_id=1007525043589799563"
+  sms-sender-req-param-name: "send"
+  sms-sender-username-req-param-name: "key"
+  sms-sender-password-req-param-name: "key"
+  sms-destination-mobile-req-param-name: "dest"
+  sms-message-req-param-name: "text"
+  sms.mobile.prefix: "91"
+  sms.verify.response: "false"
   sms-error-codes: "401,403,404,405,406,407,408,409,410,411,412,413,414"
+
+egov-notification-mail:
+  memory_limits: 768Mi
+  heap: "-Xmx384m -Xms256m"
+  mail-port: "587"
 
 egov-user:
   heap: "-Xmx256m -Xms256m"
@@ -298,14 +320,20 @@ egov-persister:
   replicas: 1
   images:
     - egovio/egov-persister
-  persist-yml-path: "file:///work-dir/upyog-configs/configs/egov-persister/pgr-services-persister.yml,file:///work-dir/upyog-configs/configs/egov-persister/pt-mutation-calculator-persister.yml,file:///work-dir/upyog-configs/configs/egov-persister/apportion-persister.yml,file:///work-dir/upyog-configs/configs/egov-persister/billing-services-persist.yml,file:///work-dir/upyog-configs/configs/egov-persister/egf-bill.yaml,file:///work-dir/upyog-configs/configs/egov-persister/egov-user-event-persister.yml,file:///work-dir/upyog-configs/configs/egov-persister/egov-workflow-v2-persister.yml,file:///work-dir/upyog-configs/configs/egov-persister/firenoc_persiter.yaml,file:///work-dir/upyog-configs/configs/egov-persister/hrms-employee-persister.yml,file:///work-dir/upyog-configs/configs/egov-persister/pdf-generator.yml,file:///work-dir/upyog-configs/configs/egov-persister/pg-service-persister.yml,file:///work-dir/upyog-configs/configs/egov-persister/pgr.v3.yml,file:///work-dir/upyog-configs/configs/egov-persister/property-services.yml,file:///work-dir/upyog-configs/configs/egov-persister/pt-calculator-v2-persister.yml,file:///work-dir/upyog-configs/configs/egov-persister/pt-drafts.yml,file:///work-dir/upyog-configs/configs/egov-persister/pt-persist.yml,file:///work-dir/upyog-configs/configs/egov-persister/tl-billing-slab-persister.yml,file:///work-dir/upyog-configs/configs/egov-persister/tl-calculation-persister.yml,file:///work-dir/upyog-configs/configs/egov-persister/uploader-persister.yml,file:///work-dir/upyog-configs/configs/egov-persister/collection-migration-persister.yml,file:///work-dir/upyog-configs/configs/egov-persister/property-services-registry.yml,file:///work-dir/upyog-configs/configs/egov-persister/tradelicense.yml,file:///work-dir/upyog-configs/configs/egov-persister/sewerage-persist.yml,file:///work-dir/upyog-configs/configs/egov-persister/water-persist.yml,file:///work-dir/upyog-configs/configs/egov-persister/water-meter.yml,file:///work-dir/upyog-configs/configs/egov-persister/bpa-persister.yml,file:///work-dir/upyog-configs/configs/egov-persister/assessment-persister.yml,file:///work-dir/upyog-configs/configs/egov-persister/chatbot.yml"
+  persist-yml-path: "file:///config/pgr-services-persister.yml,file:///work-dir/upyog-configs/configs/egov-persister/egov-workflow-v2-persister.yml,file:///work-dir/upyog-configs/configs/egov-persister/pgr.v3.yml,file:///work-dir/upyog-configs/configs/egov-persister/hrms-employee-persister.yml"
   initContainers:
     gitSync:
       repo: "git@github.com:Upyog-Org/upyog-configs.git"      ##### Change repo url with Your fork Repo url
       branch: "master"                                    ##### Change repo branch with Your fork Repo branch
+      dest: "upyog-configs"
 
 pgr-services:
   memory_limits: 512Mi
+  notification-email-enabled: "true"
+
+egov-location:
+  memory_limits: 512Mi
+  heap: "-Xmx384m -Xms256m"
 
 egov-data-uploader:
   initContainers:
@@ -429,7 +457,13 @@ gateway:
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
+billing-service:
+  memory_limits: 768Mi
+  heap: "-Xmx384m -Xms256m"
+
 collection-services:
+  memory_limits: 768Mi
+  heap: "-Xmx384m -Xms256m"
   receiptnumber-servicebased: "true"
   receipt-search-paginate: "true"
   receipt-search-defaultsize: 30
@@ -444,17 +478,25 @@ collection-receipt-voucher-consumer:
   zirakpur-erp-host: "https://zirakpur-qa.egovernments.org/"
 
 finance-collections-voucher-consumer:
+  memory_limits: 768Mi
+  heap: "-Xmx384m -Xms256m"
   erp-env-name: "qa"
   erp-domain-name: "egovernments.org"
 
 
+egov-otp:
+  memory_limits: 768Mi
+  heap: "-Xmx384m -Xms256m"
+
 user-otp:
   logging-level: "DEBUG"
+  memory_limits: 768Mi
+  heap: "-Xmx384m -Xms256m"
 
 # rainmaker-pgr >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 rainmaker-pgr:
   notification-sms-enabled: "false"
-  notification-email-enabled: "false"
+  notification-email-enabled: "true"
   new-complaint-enabled: "true"
   reassign-complaint-enabled: "true"
   reopen-complaint-enabled: "true"
@@ -462,10 +504,21 @@ rainmaker-pgr:
   notification-allowed-status: "open,assigned,rejected,resolved"
 
 pt-services-v2:
-  pt-userevents-pay-link: "/citizen/otpLogin?mobileNo=$mobile&redirectTo=egov-common/pay?consumerCode=$consumerCode&tenantId=$tenantId"
+  pt-userevents-pay-link: "/digit-ui/citizen/otpLogin?mobileNo=$mobile&redirectTo=egov-common/pay?consumerCode=$consumerCode&tenantId=$tenantId"
 
 pt-calculator-v2:
   logging-level: "DEBUG"
+  memory_limits: 768Mi
+  heap: "-Xmx384m -Xms256m"
+
+property-services:
+  memory_limits: 768Mi
+  heap: "-Xmx384m -Xms256m"
+  notification-sms-enabled: "true"
+  egov-idgen-ack-format: "PG-AC-[cy:yyyy-MM-dd]-[SEQ_EG_PT_ACK]"
+  egov-idgen-ptid-format: "PG-PT-[cy:yyyy-MM-dd]-[SEQ_EG_PT_PTID]"
+  egov-idgen-mutation-format: "PG-MT-[CITY]-[SEQ_EG_PT_MUTATION]"
+  egov-idgen-assm-format: "PG-AS-[cy:yyyy-MM-dd]-[SEQ_EG_PT_ASSM]"
 
 tl-services:
   heap: "-Xmx128m -Xms64m"
@@ -473,9 +526,9 @@ tl-services:
   java-args: -Dspring.profiles.active=monitoring
   tl-application-num-format: "APP-[SEQ_EG_TL_APL]"
   tl-license-num-format: "MP-LEP-[SEQ_EG_PT_LN]"
-  tl-userevents-pay-link: "citizen/otpLogin?mobileNo=$mobile&redirectTo=egov-common/pay?consumerCode=$applicationNo&tenantId=$tenantId"
+  tl-userevents-pay-link: "digit-ui/citizen/otpLogin?mobileNo=$mobile&redirectTo=egov-common/pay?consumerCode=$applicationNo&tenantId=$tenantId"
   tl-payment-topic-name: "egov.collection.payment-create"
-  host-link: "https://www.enagariseva.com/citizen/"
+  host-link: "https://www.enagariseva.com/digit-ui/citizen/"
   pdf-link: "https://www.enagariseva.com/egov-pdf/download/epass?tenantId={TENANTID}&uuid={UUID}"
   tl-search-default-limit: "100"
 
@@ -483,12 +536,12 @@ egov-workflow-v2:
   logging-level: "DEBUG"
   java-args: -Dspring.profiles.active=monitoring
   workflow-statelevel: "true"
-  host-link: "https://www.enagariseva.com/citizen/"
+  host-link: "https://www.enagariseva.com/digit-ui/citizen/"
   pdf-link: "/download/epass?tenantId={TENANTID}&ids={UUID}"
 
 egov-hrms:
   java-args: -Dspring.profiles.active=monitoring
-  employee-applink: "https://www.enagariseva.com/employee/user/login"
+  employee-applink: "https://enagariseva.com/employee/user/login"
 
 
 
@@ -607,7 +660,7 @@ kafka-v2:
   heapOptions: "-Xms704M -Xmx704M"
   resources: |
     requests:
-      cpu: 500m
+      cpu: 250m
       memory: 1408Mi
     limits:
       cpu: 2000m
@@ -666,7 +719,7 @@ elasticsearch-data-v1:
   esJavaOpts: "-Xmx1g -Xms1g"
   resources:
     requests:
-      cpu: "500m"
+      cpu: "250m"
       memory: "2Gi"
     limits:
       cpu: "2000m"
@@ -691,7 +744,7 @@ elasticsearch-master-v1:
   esJavaOpts: "-Xmx448m -Xms448m"
   resources:
     requests:
-      cpu: "300m"
+      cpu: "150m"
       memory: "896Mi"
     limits:
       cpu: "500m"
