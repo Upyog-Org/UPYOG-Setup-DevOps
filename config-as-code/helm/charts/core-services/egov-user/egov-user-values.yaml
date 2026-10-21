@@ -95,6 +95,10 @@ env: |
     value: "enc-user-audit-data"         
   - name: SPRING_KAFKA_CONSUMER_GROUP_ID
     value: "egov-user"
+  - name: SPRING_KAFKA_PRODUCER_PROPERTIES_MAX_BLOCK_MS
+    value: "1000"
+  - name: SPRING_KAFKA_PRODUCER_PROPERTIES_REQUEST_TIMEOUT_MS
+    value: "1000"
   - name: ACCOUNT_UNLOCK_COOL_DOWN_PERIOD_MINUTES
     value: {{ index .Values "account-unlock-cool-down-period-minutes" | quote }}
   - name: SPRING_KAFKA_PRODUCER_KEY_SERIALIZER

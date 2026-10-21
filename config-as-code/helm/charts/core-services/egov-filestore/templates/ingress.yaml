@@ -13,7 +13,7 @@ spec:
       paths:
       - backend:
           service:
-            name: gateway
+            name: egov-filestore
             port:
               number: 8080
         path: /{{ .Values.ingress.context }}

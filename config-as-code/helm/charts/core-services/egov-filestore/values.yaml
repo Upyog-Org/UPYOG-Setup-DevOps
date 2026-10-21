@@ -108,6 +108,11 @@ env: |
       configMapKeyRef:
         name: egov-service-host
         key: minio-url
+  {{ else }}
+  - name: MINIO_URL
+    value: {{ index .Values "aws.s3.url" | default "https://s3.ap-south-1.amazonaws.com" | quote }}
+  - name: FIXED_BUCKET_REGION
+    value: {{ index .Values "fixed-bucket-region" | default "ap-south-1" | quote }}
   {{- end }}
   {{- if index .Values "filestore-url-validity" }}   
   - name: PRESIGNED_URL_EXPIRY_TIME_IN_SECS     

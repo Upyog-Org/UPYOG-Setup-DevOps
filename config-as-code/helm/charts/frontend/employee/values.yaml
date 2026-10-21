@@ -7,6 +7,9 @@ labels:
 ingress:
   enabled: true
   context: "employee"
+  additionalAnnotations: |
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite ^/employee/?(.*)$ https://www.enagariseva.com/digit-ui/employee/$1 permanent;
 
 # Init Containers Configs
 initContainers: {}
