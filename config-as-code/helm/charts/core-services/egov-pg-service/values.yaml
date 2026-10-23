@@ -28,6 +28,7 @@ healthChecks:
 appType: "java-spring"
 tracing-enabled: true
 axis: true
+razorpay: false
 payu-url: ""
 payu-url-status: ""
 ccavenue-status-access-code: ""
@@ -164,6 +165,22 @@ env: |
       secretKeyRef:
         name: egov-pg-service
         key: payumerchantsalt 
+  {{- end }}
+  {{- if .Values.razorpay }}
+  - name: RAZORPAY_ACTIVE
+    value: "true"
+  - name: RAZORPAY_API_BASE
+    value: "https://api.razorpay.com"
+  - name: RAZORPAY_KEY_ID
+    valueFrom:
+      secretKeyRef:
+        name: egov-pg-service
+        key: razorpay-key-id
+  - name: RAZORPAY_KEY_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: egov-pg-service
+        key: razorpay-key-secret
   {{- end }}
   {{- if .Values.ccavenue }}
   - name: CCAVENUE_ACTIVE

@@ -396,6 +396,7 @@ egov-indexer:
 egov-pg-service:
   memory_limits: 512Mi
   axis: true
+  razorpay: true
   paygov: true
   egov-pg-reconciliation-system-user-uuid: "18a32260-1861-4426-9fbb-64dc207d54f3"
 
